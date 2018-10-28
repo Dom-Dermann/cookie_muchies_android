@@ -26,11 +26,13 @@ public class ItemCreationActivity extends AppCompatActivity {
     Button button;
     EditText editTextItem;
     JSONObject postParams;
+    private Endpoints endpoints;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_creation);
+        endpoints = new Endpoints(this);
 
         editTextItem = findViewById(R.id.editTextItem);
 
@@ -45,36 +47,11 @@ public class ItemCreationActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                postRequest();
+                endpoints.postRequest(postParams);
             }
         });
 
 
         alertDialogBuilder = new AlertDialog.Builder(ItemCreationActivity.this);
-    }
-
-    public void postRequest(){
-        String postURL = "https://cookie-munchies.herokuapp.com/api/items";
-
-        JsonObjectRequest postRequest = new JsonObjectRequest(Request.Method.POST, postURL, postParams, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                alertDialogBuilder.setTitle("Server response")
-                        .setMessage("Response: " + response.toString())
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                // TODO
-                            }
-                        })
-                        .show();
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
-            }
-        });
-        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(postRequest);
     }
 }

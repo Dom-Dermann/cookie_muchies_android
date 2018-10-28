@@ -29,10 +29,12 @@ public class ItemViewAdapter extends RecyclerView.Adapter<ItemViewAdapter.ViewHo
 
     Context mContext;
     ArrayList<JSONObject> mList;
+    Endpoints endpoints;
 
     public ItemViewAdapter(Context context, ArrayList<JSONObject> arrayList){
         this.mContext = context;
         this.mList = arrayList;
+        endpoints = new Endpoints(context);
     }
 
     @NonNull
@@ -59,7 +61,7 @@ public class ItemViewAdapter extends RecyclerView.Adapter<ItemViewAdapter.ViewHo
             @Override
             public boolean onLongClick(View view) {
                 // TODO: implement long click delete
-                deleteRequest(mList.get(position));
+                endpoints.deleteRequest(mList.get(position));
                 return false;
             }
         });
@@ -67,11 +69,7 @@ public class ItemViewAdapter extends RecyclerView.Adapter<ItemViewAdapter.ViewHo
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 // TODO: put the item with changed idDone state
-                try {
-                    putRequest(mList.get(position), mList.get(position).getBoolean("isDone"));
-                } catch (JSONException je) {
-                    je.printStackTrace();
-                }
+                endpoints.putRequest(mList.get(position));
             }
         });
     }
@@ -80,66 +78,6 @@ public class ItemViewAdapter extends RecyclerView.Adapter<ItemViewAdapter.ViewHo
     public int getItemCount() {
         return mList.size();
     }
-
-    // put information that task is done
-    public void putRequest(JSONObject obj, Boolean done){
-        // get ID of object to be modified
-        try {
-            String _id = obj.getString("_id");
-            String url = "https://cookie-munchies.herokuapp.com/api/items/" + _id;
-
-            if (done == false) {
-                obj.put("isDone", true);
-            } else {
-                obj.put("isDone", false);
-            }
-
-            JsonObjectRequest request = new JsonObjectRequest(Request.Method.PUT, url, obj, new Response.Listener<JSONObject>() {
-                @Override
-                public void onResponse(JSONObject response) {
-                    Toast.makeText(mContext, "Item completed. Congrats!", Toast.LENGTH_SHORT).show();
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    error.printStackTrace();
-                    Toast.makeText(mContext, "Couldn't connect to server.", Toast.LENGTH_SHORT).show();
-                }
-            });
-            VolleySingleton.getInstance(mContext.getApplicationContext()).addToRequestQueue(request);
-        } catch (JSONException jse) {
-            jse.printStackTrace();
-            Toast.makeText(mContext, "Oh no, something went wrong", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    // delete item
-    public void deleteRequest(JSONObject obj){
-        // get ID of object to be modified
-        try {
-            String _id = obj.getString("_id");
-            String url = "https://cookie-munchies.herokuapp.com/api/items/" + _id;
-
-            JsonObjectRequest request = new JsonObjectRequest(Request.Method.DELETE, url, null, new Response.Listener<JSONObject>() {
-                @Override
-                public void onResponse(JSONObject response) {
-                    Toast.makeText(mContext, "Item succfully deleted. Congrats!", Toast.LENGTH_SHORT).show();
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    error.printStackTrace();
-                    Toast.makeText(mContext, "Couldn't connect to server.", Toast.LENGTH_SHORT).show();
-                }
-            });
-            VolleySingleton.getInstance(mContext.getApplicationContext()).addToRequestQueue(request);
-        } catch (JSONException jse) {
-            jse.printStackTrace();
-            Toast.makeText(mContext, "Oh no, something went wrong", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
 
     public static class ViewHolder  extends RecyclerView.ViewHolder {
 

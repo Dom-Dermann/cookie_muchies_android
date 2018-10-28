@@ -40,9 +40,10 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
-    private ItemViewAdapter itemViewAdapter;
-    private ArrayList<JSONObject> itemList;
-    private SwipeRefreshLayout swipeRefreshLayout;
+    public static ItemViewAdapter itemViewAdapter;
+    public static ArrayList<JSONObject> itemList;
+    public static SwipeRefreshLayout swipeRefreshLayout;
+    private Endpoints endpoints;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +51,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // set up queue and get JSON data from server
-        getRequest();
+        endpoints = new Endpoints(this);
+        endpoints.getRequest();
 
         // initialize item list
         itemList = new ArrayList<>();
@@ -60,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                getRequest();
+                endpoints.getRequest();
             }
         });
 
@@ -88,36 +90,5 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(itemCreation);
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void getRequest(){
-        String url = "https://cookie-munchies.herokuapp.com/api/items";
-        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
-            @Override
-            public void onResponse(JSONArray response) {
-                Log.i("Response", "received");
-                itemList.clear();
-                try {
-                    for (int i=0; i < response.length(); i++) {
-                        JSONObject item = response.getJSONObject(i);
-                        itemList.add(item);
-                    }
-                    // update recyclerView and stop showing refresh symbol
-                    itemViewAdapter.notifyDataSetChanged();
-                    swipeRefreshLayout.setRefreshing(false);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(MainActivity.this, "Could not get update.", Toast.LENGTH_SHORT).show();
-                    swipeRefreshLayout.setRefreshing(false);
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
-                Toast.makeText(MainActivity.this, "Couldn't connect to server.", Toast.LENGTH_SHORT).show();
-            }
-        });
-        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(request);
     }
 }
