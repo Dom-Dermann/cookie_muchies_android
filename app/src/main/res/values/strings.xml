@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">CookieMunchies</string>
+    <string name="title_activity_login_">Login_Activity</string>
 </resources>

@@ -1,6 +1,8 @@
 package de.dominikusdermann.cookiemunchies;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -44,15 +46,20 @@ public class MainActivity extends AppCompatActivity {
     public static ArrayList<JSONObject> itemList;
     public static SwipeRefreshLayout swipeRefreshLayout;
     private Endpoints endpoints;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // set up shared preferences
+        sharedPreferences = getSharedPreferences("de.dominikusdermann.cookiemunchies", Context.MODE_PRIVATE);
+        Log.d("jwt in shared prefs: ", sharedPreferences.getString("jwt", "no-jwt"));
+
         // set up queue and get JSON data from server
         endpoints = new Endpoints(this);
-        endpoints.getRequest();
+        endpoints.getAllLists();
 
         // initialize item list
         itemList = new ArrayList<>();

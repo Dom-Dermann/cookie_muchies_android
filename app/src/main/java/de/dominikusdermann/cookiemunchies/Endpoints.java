@@ -1,11 +1,11 @@
 package de.dominikusdermann.cookiemunchies;
 
 import android.content.Context;
-import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -16,14 +16,47 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static de.dominikusdermann.cookiemunchies.MainActivity.swipeRefreshLayout;
 
 public class Endpoints {
 
     Context mContext;
+    private SharedPreferences sharedPreferences;
+    String jwt;
 
     public Endpoints(Context c){
         this.mContext = c;
+        sharedPreferences = mContext.getSharedPreferences("de.dominikusdermann.cookiemunchies", Context.MODE_PRIVATE);
+        this.jwt = sharedPreferences.getString("jwt", "no-jwt");
+    }
+
+
+
+    public void getAllLists() {
+        String url = "http://10.0.0.2:3223/api/lists/all";
+        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                Log.i("server response: ", response.toString());
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.i("Server error: ", error.toString());
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                Log.i("jwt in header: ", jwt);
+                params.put("x-auth-token", jwt);
+                return params;
+            }
+        };
+        VolleySingleton.getInstance(mContext.getApplicationContext()).addToRequestQueue(request);
     }
 
     public void getRequest(){
