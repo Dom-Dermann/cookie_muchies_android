@@ -57,10 +57,9 @@ public class LoginActivity extends AppCompatActivity {
         return Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 
-    private boolean validateUser(String email, String pass) {
+    private void validateUser(String email, String pass) {
         // set up authenticator
         JSONObject userData = new JSONObject();
-        JSONObject response = null;
 
         try {
             userData.put("email", email);
@@ -70,7 +69,5 @@ public class LoginActivity extends AppCompatActivity {
         } catch (Exception e) {
             Toast.makeText(this, "upps, something went wrong.", Toast.LENGTH_SHORT).show();
         }
-
-        return false;
     }
 }

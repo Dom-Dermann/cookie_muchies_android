@@ -36,11 +36,12 @@ public class Endpoints {
 
 
     public void getAllLists() {
-        String url = "http://10.0.0.2:3223/api/lists/all";
-        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
+        String url = "http://10.0.2.2:3223/api/lists/all";
+
+        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,  new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                Log.i("server response: ", response.toString());
+                Log.i("Server response: ", response.toString());
             }
         }, new Response.ErrorListener() {
             @Override
@@ -50,9 +51,45 @@ public class Endpoints {
         }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<>();
-                Log.i("jwt in header: ", jwt);
+                Map<String, String> params = new HashMap<String, String>();
                 params.put("x-auth-token", jwt);
+                Log.i("Header parameters: ", params.toString());
+                return params;
+            }
+        };
+        VolleySingleton.getInstance(mContext.getApplicationContext()).addToRequestQueue(request);
+    }
+
+    public void getList() {
+        String currentUserList = sharedPreferences.getString("currentUserList", "no ID");
+        Log.i("Current User List : ", currentUserList);
+        String url = "http://10.0.2.2:3223/api/lists/" + currentUserList;
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,  new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.i("Server response: ", response.toString());
+                try {
+                    JSONArray items = response.getJSONArray("items");
+                    for( int i = 0; i < items.length(); i++) {
+                        MainActivity.itemList.add(items.getJSONObject(i));
+                    }
+                    Log.i("itemList: ", MainActivity.itemList.toString());
+                } catch (Exception e) {
+                    Log.i("getList: ", e.toString());
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.i("Server error: ", error.toString());
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("x-auth-token", jwt);
+                Log.i("Header parameters: ", params.toString());
                 return params;
             }
         };

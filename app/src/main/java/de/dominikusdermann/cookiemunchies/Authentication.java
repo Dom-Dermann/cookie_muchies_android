@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -13,27 +14,29 @@ import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONObject;
 
-import java.security.spec.ECField;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Authentication {
 
     private Context mContext;
     private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor spEditor;
+    private String jwt;
 
     public Authentication(Context c) {
         this.mContext = c;
+        sharedPreferences = mContext.getSharedPreferences("de.dominikusdermann.cookiemunchies", Context.MODE_PRIVATE);
+        spEditor = sharedPreferences.edit();
+        jwt = sharedPreferences.getString("jwt", "no-jwt");
     }
 
-    public JSONObject logIn(JSONObject userData) {
+    public void logIn(JSONObject userData) {
         String url = "http://10.0.2.2:3223/api/auth";
-        JSONObject res = new JSONObject();
-        sharedPreferences = mContext.getSharedPreferences("de.dominikusdermann.cookiemunchies", Context.MODE_PRIVATE);
-        final SharedPreferences.Editor spEditor = sharedPreferences.edit();
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, userData, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.d("Pure response: ", response.toString());
                 try {
                     String jwt = response.getString("jwt");
                     spEditor.putString("jwt", jwt);
@@ -42,6 +45,7 @@ public class Authentication {
                     e.printStackTrace();
                     Log.e("jwt not found", e.toString());
                 }
+                whoAmI();
                 Intent main = new Intent(mContext, MainActivity.class);
                 mContext.startActivity(main);
             }
@@ -52,6 +56,36 @@ public class Authentication {
             }
         });
         VolleySingleton.getInstance(mContext.getApplicationContext()).addToRequestQueue(request);
-        return res;
+    }
+
+    public void whoAmI() {
+        String url = "http://10.0.2.2:3223/api/users/me";
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    String listId = response.getString("ownsList");
+                    spEditor.putString("currentUserList", listId).commit();
+                } catch (Exception e) {
+                    Log.e("Who am I: ", e.toString());
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("Who am I: ", error.toString());
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                Log.i("jwt in header: ", jwt);
+                params.put("x-auth-token", jwt);
+                Log.i("Header parameters: ", params.toString());
+                return params;
+            }
+        };
+        VolleySingleton.getInstance(mContext.getApplicationContext()).addToRequestQueue(request);
     }
 }

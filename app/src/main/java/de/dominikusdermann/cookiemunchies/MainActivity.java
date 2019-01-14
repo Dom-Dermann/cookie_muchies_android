@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
         // set up queue and get JSON data from server
         endpoints = new Endpoints(this);
-        endpoints.getAllLists();
+        endpoints.getList();
 
         // initialize item list
         itemList = new ArrayList<>();
@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                endpoints.getRequest();
+                endpoints.getList();
             }
         });
 
