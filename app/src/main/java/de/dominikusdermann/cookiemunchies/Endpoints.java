@@ -1,6 +1,7 @@
 package de.dominikusdermann.cookiemunchies;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
@@ -33,10 +34,9 @@ public class Endpoints {
         this.jwt = sharedPreferences.getString("jwt", "no-jwt");
     }
 
-
-
+    // TODO: I screwed this up; fix!
     public void getAllLists() {
-        String url = "http://10.0.2.2:3223/api/lists/all";
+        String url = "https://cookie-munchies.herokuapp.com/api/lists/all";
 
         JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,  new Response.Listener<JSONArray>() {
             @Override
@@ -53,7 +53,6 @@ public class Endpoints {
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("x-auth-token", jwt);
-                Log.i("Header parameters: ", params.toString());
                 return params;
             }
         };
@@ -63,20 +62,22 @@ public class Endpoints {
     public void getList() {
         String currentUserList = sharedPreferences.getString("currentUserList", "no ID");
         Log.i("Current User List : ", currentUserList);
-        String url = "http://10.0.2.2:3223/api/lists/" + currentUserList;
+        String url = "https://cookie-munchies.herokuapp.com/api/lists/" + currentUserList;
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,  new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 Log.i("Server response: ", response.toString());
+                MainActivity.itemList.clear();
                 try {
                     JSONArray items = response.getJSONArray("items");
                     for( int i = 0; i < items.length(); i++) {
                         MainActivity.itemList.add(items.getJSONObject(i));
                     }
-                    Log.i("itemList: ", MainActivity.itemList.toString());
+                    MainActivity.itemViewAdapter.notifyDataSetChanged();
+                    MainActivity.swipeRefreshLayout.setRefreshing(false);
                 } catch (Exception e) {
-                    Log.i("getList: ", e.toString());
+                    Log.e("getList: ", e.toString());
                 }
             }
         }, new Response.ErrorListener() {
@@ -89,7 +90,63 @@ public class Endpoints {
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("x-auth-token", jwt);
-                Log.i("Header parameters: ", params.toString());
+                return params;
+            }
+        };
+        VolleySingleton.getInstance(mContext.getApplicationContext()).addToRequestQueue(request);
+    }
+
+    public void addItem(JSONObject item) {
+        String currentUserList = sharedPreferences.getString("currentUserList", "no ID");
+        String url = "https://cookie-munchies.herokuapp.com/api/items/" + currentUserList;
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, item,  new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.i("Server response: ", response.toString());
+                Toast.makeText(mContext, "Item successfully added", Toast.LENGTH_SHORT).show();
+                Intent main = new Intent(mContext, MainActivity.class);
+                mContext.startActivity(main);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(mContext, "Oh no, something went wrong.", Toast.LENGTH_SHORT).show();
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("x-auth-token", jwt);
+                return params;
+            }
+        };
+        VolleySingleton.getInstance(mContext.getApplicationContext()).addToRequestQueue(request);
+    }
+
+    public void deleteItem(String itemID) {
+        String currentUserList = sharedPreferences.getString("currentUserList", "no ID");
+        String url = "https://cookie-munchies.herokuapp.com/api/items/" + currentUserList + "/" + itemID;
+        Log.i("Delte URL: ", url);
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.DELETE, url, null,  new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Toast.makeText(mContext, "successfully deleted" + response.toString(), Toast.LENGTH_SHORT).show();
+                getList();
+                MainActivity.itemViewAdapter.notifyDataSetChanged();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.i("Server error: ", error.toString());
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("x-auth-token", jwt);
                 return params;
             }
         };

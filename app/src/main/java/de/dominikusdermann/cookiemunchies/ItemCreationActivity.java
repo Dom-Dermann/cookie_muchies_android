@@ -47,7 +47,7 @@ public class ItemCreationActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                // endpoints.postRequest(postParams);
+                endpoints.addItem(postParams);
             }
         });
 

@@ -32,7 +32,7 @@ public class Authentication {
     }
 
     public void logIn(JSONObject userData) {
-        String url = "http://10.0.2.2:3223/api/auth";
+        String url = "https://cookie-munchies.herokuapp.com/api/auth";
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, userData, new Response.Listener<JSONObject>() {
             @Override
@@ -59,7 +59,7 @@ public class Authentication {
     }
 
     public void whoAmI() {
-        String url = "http://10.0.2.2:3223/api/users/me";
+        String url = "https://cookie-munchies.herokuapp.com/api/users/me";
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
@@ -80,9 +80,7 @@ public class Authentication {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> params = new HashMap<String, String>();
-                Log.i("jwt in header: ", jwt);
                 params.put("x-auth-token", jwt);
-                Log.i("Header parameters: ", params.toString());
                 return params;
             }
         };

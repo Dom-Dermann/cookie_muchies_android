@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,27 +50,22 @@ public class ItemViewAdapter extends RecyclerView.Adapter<ItemViewAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         try {
             String name = mList.get(position).getString("name");
-            Boolean done = mList.get(position).getBoolean("isDone");
             holder.itemText.setText(name);
-            holder.checkBox.setChecked(done);
         } catch (JSONException je) {
             je.printStackTrace();
             Toast.makeText(mContext, "Couldn't load an item.", Toast.LENGTH_SHORT).show();
         }
 
-        holder.itemText.setOnLongClickListener(new View.OnLongClickListener() {
+        holder.imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onLongClick(View view) {
-                // TODO: implement long click delete
-                endpoints.deleteRequest(mList.get(position));
-                return false;
-            }
-        });
-        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                // TODO: put the item with changed idDone state
-                endpoints.putRequest(mList.get(position));
+            public void onClick(View view) {
+                JSONObject currentItem = mList.get(position);
+                try {
+                    String currentItemId = currentItem.getString("_id");
+                    endpoints.deleteItem(currentItemId);
+                } catch (Exception e) {
+                    Log.e("onBindViewHolder: ", e.toString());
+                }
             }
         });
     }
@@ -82,11 +78,11 @@ public class ItemViewAdapter extends RecyclerView.Adapter<ItemViewAdapter.ViewHo
     public static class ViewHolder  extends RecyclerView.ViewHolder {
 
         TextView itemText;
-        CheckBox checkBox;
+        ImageButton imageButton;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             itemText = itemView.findViewById(R.id.itemText);
-            checkBox = itemView.findViewById(R.id.checkBox);
+            imageButton = itemView.findViewById(R.id.imageButtonDelete);
         }
     }
 }
