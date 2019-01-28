@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
 
         // set up shared preferences
         sharedPreferences = getSharedPreferences("de.dominikusdermann.cookiemunchies", Context.MODE_PRIVATE);
-        Log.d("jwt in shared prefs: ", sharedPreferences.getString("jwt", "no-jwt"));
 
         // set up queue and get JSON data from server
         endpoints = new Endpoints(this);
@@ -95,6 +94,14 @@ public class MainActivity extends AppCompatActivity {
             case R.id.addItemMenuButton:
                 Intent itemCreation = new Intent(this, ItemCreationActivity.class);
                 startActivity(itemCreation);
+                break;
+            case R.id.infoMenuButton:
+                Intent info = new Intent(this, InfoActivity.class);
+                startActivity(info);
+                break;
+            case R.id.switchListButton:
+                Intent swithching = new Intent(this, ListsActivity.class);
+                startActivity(swithching);
         }
         return super.onOptionsItemSelected(item);
     }

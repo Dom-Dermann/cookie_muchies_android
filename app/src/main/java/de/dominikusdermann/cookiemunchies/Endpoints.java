@@ -1,5 +1,6 @@
 package de.dominikusdermann.cookiemunchies;
 
+import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,6 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,14 +36,38 @@ public class Endpoints {
         this.jwt = sharedPreferences.getString("jwt", "no-jwt");
     }
 
-    // TODO: I screwed this up; fix!
     public void getAllLists() {
         String url = "https://cookie-munchies.herokuapp.com/api/lists/all";
 
         JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,  new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                Log.i("Server response: ", response.toString());
+                for (int i = 0; i < response.length(); i++) {
+                    try {
+                        JSONObject listObject = response.getJSONObject(i);
+                        // get id of each list
+                        String list_id = listObject.getString("_id");
+                        JSONObject owner = listObject.getJSONObject("owner");
+                        // first name of the list owner
+                        String first_name = owner.getString("first_name");
+
+                        // put owner and list together
+                        JSONObject owner_and_id = new JSONObject();
+                        owner_and_id.put("name", first_name);
+                        owner_and_id.put("list_id", list_id);
+
+                        // add the new object to array list. Structure:
+                        //  {
+                        //      name: Cosima,
+                        //      list_id: 5c2f7cc1fab39d0004d96b4d
+                        //  }
+
+                        ListsActivity.listArray.add(owner_and_id);
+                        ListsActivity.listViewAdapter.notifyDataSetChanged();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }, new Response.ErrorListener() {
             @Override
