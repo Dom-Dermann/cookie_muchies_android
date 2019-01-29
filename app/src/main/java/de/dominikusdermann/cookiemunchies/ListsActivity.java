@@ -4,6 +4,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.Button;
 
 import org.json.JSONObject;
 
@@ -16,6 +18,8 @@ public class ListsActivity extends AppCompatActivity {
     public static ListViewAdapter listViewAdapter;
     public static ArrayList<JSONObject> listArray;
     private Endpoints endpoints;
+    public static Button myButton;
+    private Authentication authentication;
 
 
     @Override
@@ -29,8 +33,7 @@ public class ListsActivity extends AppCompatActivity {
         // get all lists from endpoint
         endpoints = new Endpoints(this);
         endpoints.getAllLists();
-
-        // TODO: get list of lists from endpoint
+        authentication = new Authentication(this);
 
         // set up the recycler view
         recyclerView = findViewById(R.id.listRecyclerView);
@@ -38,5 +41,14 @@ public class ListsActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         listViewAdapter = new ListViewAdapter(this, listArray);
         recyclerView.setAdapter(listViewAdapter);
+
+        // initiate my list button
+        myButton = findViewById(R.id.myButton2);
+        myButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                authentication.whoAmI();
+            }
+        });
     }
 }

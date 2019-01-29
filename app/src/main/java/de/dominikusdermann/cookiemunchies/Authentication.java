@@ -67,14 +67,16 @@ public class Authentication {
                 try {
                     String listId = response.getString("ownsList");
                     spEditor.putString("currentUserList", listId).commit();
+                    Intent main = new Intent(mContext, MainActivity.class);
+                    mContext.startActivity(main);
                 } catch (Exception e) {
-                    Log.e("Who am I: ", e.toString());
+                    e.printStackTrace();
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e("Who am I: ", error.toString());
+                error.printStackTrace();
             }
         }) {
             @Override
