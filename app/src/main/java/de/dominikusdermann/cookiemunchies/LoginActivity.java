@@ -1,5 +1,8 @@
 package de.dominikusdermann.cookiemunchies;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +20,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText emailText;
     private EditText passwordText;
     private Authentication authenticator;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +30,14 @@ public class LoginActivity extends AppCompatActivity {
         // set up edit text fields
         emailText = findViewById(R.id.email_view);
         passwordText = findViewById(R.id.password_view);
+
+        // if user already has a token on their phone, skip the login screen and bring them directly into the app
+        sharedPreferences = this.getSharedPreferences("de.dominikusdermann.cookiemunchies", Context.MODE_PRIVATE);
+        String jwt = sharedPreferences.getString("jwt", "no-jwt");
+        if ( jwt != "no-jwt") {
+            Intent main = new Intent(this, MainActivity.class);
+            this.startActivity(main);
+        }
 
         loginButton = findViewById(R.id.buttonLogin);
         loginButton.setOnClickListener(new View.OnClickListener() {
