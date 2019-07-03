@@ -3,6 +3,8 @@ package de.dominikusdermann.cookiemunchies;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -17,7 +19,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 
 public class Endpoints {
@@ -84,40 +88,50 @@ public class Endpoints {
     }
 
     public void getList() {
-        String currentUserList = sharedPreferences.getString("currentUserList", "no ID");
-        Log.i("Current User List : ", currentUserList);
-        String url = "https://cookie-munchies.herokuapp.com/api/lists/" + currentUserList;
+        // check internet state
+        boolean networkState = isNetworkAvailable();
+        if (networkState) {
+            String currentUserList = sharedPreferences.getString("currentUserList", "no ID");
+            String url = "https://cookie-munchies.herokuapp.com/api/lists/" + currentUserList;
 
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,  new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                Log.i("Server response: ", response.toString());
-                MainActivity.itemList.clear();
-                try {
-                    JSONArray items = response.getJSONArray("items");
-                    for( int i = 0; i < items.length(); i++) {
-                        MainActivity.itemList.add(items.getJSONObject(i));
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    MainActivity.itemList.clear();
+                    try {
+                        JSONArray items = response.getJSONArray("items");
+                        for (int i = 0; i < items.length(); i++) {
+                            MainActivity.itemList.add(items.getJSONObject(i));
+                        }
+                        // TODO: save data to sqlite to retrieve offline
+                        MainActivity.itemViewAdapter.notifyDataSetChanged();
+                        MainActivity.swipeRefreshLayout.setRefreshing(false);
+                    } catch (Exception e) {
+                        Log.e("getList: ", e.toString());
                     }
-                    MainActivity.itemViewAdapter.notifyDataSetChanged();
-                    MainActivity.swipeRefreshLayout.setRefreshing(false);
-                } catch (Exception e) {
-                    Log.e("getList: ", e.toString());
                 }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.i("Server error: ", error.toString());
-            }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("x-auth-token", jwt);
-                return params;
-            }
-        };
-        VolleySingleton.getInstance(mContext.getApplicationContext()).addToRequestQueue(request);
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.i("Server error: ", error.toString());
+                }
+            }) {
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put("x-auth-token", jwt);
+                    return params;
+                }
+            };
+            VolleySingleton.getInstance(mContext.getApplicationContext()).addToRequestQueue(request);
+        } else {
+            // do this when internet access is not available
+            // get the list from data saved in shared preferences
+            Toast.makeText(mContext, "No internet connection detected. You may be looking at old data.", Toast.LENGTH_SHORT).show();
+            // TODO: get set form sqlite, convert back to list and serve to MainActivity.itemList
+            MainActivity.itemViewAdapter.notifyDataSetChanged();
+            MainActivity.swipeRefreshLayout.setRefreshing(false);
+        }
     }
 
     public void addItem(JSONObject item) {
@@ -176,4 +190,12 @@ public class Endpoints {
         };
         VolleySingleton.getInstance(mContext.getApplicationContext()).addToRequestQueue(request);
     }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
 }
+
+
