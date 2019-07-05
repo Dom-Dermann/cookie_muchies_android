@@ -14,10 +14,16 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -28,11 +34,13 @@ public class Endpoints {
 
     Context mContext;
     private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor prefEditor;
     String jwt;
 
     public Endpoints(Context c){
         this.mContext = c;
         sharedPreferences = mContext.getSharedPreferences("de.dominikusdermann.cookiemunchies", Context.MODE_PRIVATE);
+        prefEditor = sharedPreferences.edit();
         this.jwt = sharedPreferences.getString("jwt", "no-jwt");
     }
 
@@ -100,10 +108,14 @@ public class Endpoints {
                     MainActivity.itemList.clear();
                     try {
                         JSONArray items = response.getJSONArray("items");
+
                         for (int i = 0; i < items.length(); i++) {
                             MainActivity.itemList.add(items.getJSONObject(i));
                         }
-                        // TODO: save data to sqlite to retrieve offline
+                        // save data to shared preferences as JSON format
+                        prefEditor.putString("offlineList", items.toString());
+                        prefEditor.apply();
+
                         MainActivity.itemViewAdapter.notifyDataSetChanged();
                         MainActivity.swipeRefreshLayout.setRefreshing(false);
                     } catch (Exception e) {
@@ -128,9 +140,22 @@ public class Endpoints {
             // do this when internet access is not available
             // get the list from data saved in shared preferences
             Toast.makeText(mContext, "No internet connection detected. You may be looking at old data.", Toast.LENGTH_SHORT).show();
-            // TODO: get set form sqlite, convert back to list and serve to MainActivity.itemList
-            MainActivity.itemViewAdapter.notifyDataSetChanged();
-            MainActivity.swipeRefreshLayout.setRefreshing(false);
+            // get list from shared preferences and provide it to MainActivities's itemList instead
+            String itemList = sharedPreferences.getString("offlineList", null);
+            try {
+                MainActivity.itemList.clear();
+                JSONObject items = new JSONObject(itemList);
+                JSONArray jArray = items.getJSONArray("values");
+                for (int i=0; i < jArray.length(); i++){
+                    JSONObject item = jArray.getJSONObject(i).getJSONObject("nameValuePairs");
+                    MainActivity.itemList.add(item);
+                }
+
+                MainActivity.itemViewAdapter.notifyDataSetChanged();
+                MainActivity.swipeRefreshLayout.setRefreshing(false);
+            } catch (Exception e) {
+                Log.d("Error in SP", e.toString());
+            }
         }
     }
 
