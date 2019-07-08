@@ -166,7 +166,6 @@ public class Endpoints {
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, item,  new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.i("Server response: ", response.toString());
                 Toast.makeText(mContext, "Item successfully added", Toast.LENGTH_SHORT).show();
                 Intent main = new Intent(mContext, MainActivity.class);
                 mContext.startActivity(main);
@@ -213,6 +212,25 @@ public class Endpoints {
                 return params;
             }
         };
+        VolleySingleton.getInstance(mContext.getApplicationContext()).addToRequestQueue(request);
+    }
+
+    public void addUser(JSONObject user) {
+        String url = "https://cookie-munchies.herokuapp.com/api/users/";
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, user,  new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Toast.makeText(mContext, "successfully created", Toast.LENGTH_SHORT).show();
+                Intent login = new Intent(mContext, LoginActivity.class);
+                mContext.startActivity(login);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(mContext, "Server error: " + error.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
         VolleySingleton.getInstance(mContext.getApplicationContext()).addToRequestQueue(request);
     }
 

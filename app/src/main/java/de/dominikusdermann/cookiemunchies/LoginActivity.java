@@ -17,6 +17,7 @@ import org.json.JSONObject;
 public class LoginActivity extends AppCompatActivity {
 
     private Button loginButton;
+    private Button registerButton;
     private EditText emailText;
     private EditText passwordText;
     private Authentication authenticator;
@@ -39,6 +40,7 @@ public class LoginActivity extends AppCompatActivity {
             this.startActivity(main);
         }
 
+        // assign button functionality
         loginButton = findViewById(R.id.buttonLogin);
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,6 +60,17 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
+
+        registerButton = findViewById(R.id.registerButton);
+        registerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent register = new Intent(LoginActivity.this, RegisterActivity.class);
+                LoginActivity.this.startActivity(register);
+            }
+        });
+
+
     }
 
     private static boolean isValidEmail(CharSequence email) {
@@ -77,7 +90,7 @@ public class LoginActivity extends AppCompatActivity {
             this.authenticator = new Authentication(this);
             authenticator.logIn(userData);
         } catch (Exception e) {
-            Toast.makeText(this, "upps, something went wrong.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "whoops, something went wrong.", Toast.LENGTH_SHORT).show();
         }
     }
 }
