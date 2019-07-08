@@ -1,5 +1,6 @@
 package de.dominikusdermann.cookiemunchies;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -59,6 +60,9 @@ public class RegisterActivity extends AppCompatActivity {
 
                 // submit JSON object to backend
                 endpoints.addUser(userData);
+
+                Intent login = new Intent(RegisterActivity.this, LoginActivity.class);
+                RegisterActivity.this.startActivity(login);
             }
         });
     }

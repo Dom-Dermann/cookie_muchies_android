@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/addItemMenuButton" android:title="Add item" android:icon="@drawable/ic_add_circle_black_24dp"></item>
     <item android:id="@+id/switchListButton" android:title="Switch to another list"></item>
-    <item android:id="@+id/infoMenuButton" android:title="Use in the browser" android:icon="@drawable/pc_vector"></item>
+    <item
+        android:id="@+id/infoMenuButton"
+        android:icon="@drawable/pc_vector"
+        android:title="Use in browser"></item>
+    <item
+        android:id="@+id/logoutMenuItem"
+        android:title="Logout" />
 </menu>

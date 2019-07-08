@@ -80,6 +80,11 @@ public class MainActivity extends AppCompatActivity {
             case R.id.switchListButton:
                 Intent swithching = new Intent(this, ListsActivity.class);
                 startActivity(swithching);
+                break;
+            case R.id.logoutMenuItem:
+                sharedPreferences.edit().remove("jwt").commit();
+                Intent login = new Intent(this, LoginActivity.class);
+                this.startActivity(login);
         }
         return super.onOptionsItemSelected(item);
     }
