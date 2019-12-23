@@ -1,7 +1,9 @@
 package de.dominikusdermann.cookiemunchies;
 
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -65,5 +67,19 @@ public class RegisterActivity extends AppCompatActivity {
                 RegisterActivity.this.startActivity(login);
             }
         });
+    }
+
+    public void alertDialog() {
+        AlertDialog.Builder dialogue = new AlertDialog.Builder(this);
+        dialogue.setMessage("Please make sure your data is correct. The password needs at least one small letter, one capital letter and a symbol.");
+        dialogue.setTitle("Please review your data.");
+        dialogue.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        AlertDialog alertDialog = dialogue.create();
+        alertDialog.show();
     }
 }
